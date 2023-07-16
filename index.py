@@ -139,32 +139,68 @@ async def get_turma(turma_id: int, db=Depends(get_db)):
     script = """
         <script>
             function submitForm(action) {
-                const form = document.getElementById('login-form');
-                const formData = new FormData(form);
-                const turma_id = formData.get('turma_id');
-                const login_nome = formData.get('login_nome');
-                const login_senha = formData.get('login_senha');
+                if (action === 'criar') {
+                    const form = document.getElementById('usuario-form');
+                    const formData = new FormData(form);
+                    const turma_id = formData.get('turma_id');
+                    const nome = formData.get('nome');
+                    const email = formData.get('email');
+                    const matricula = formData.get('matricula');
+                    const curso = formData.get('curso');
+                    const senha = formData.get('senha');
+                    const is_admin = formData.get('is_admin') === 'true';
 
-                fetch(`/api/usuarios?username=${login_nome}`)
-                .then(response => {
-                    if (response.status === 200) {
-                        return response.json();
-                    } else {
-                        throw new Error('Usuário não encontrado');
-                    }
-                })
-                .then(users => {
-                    const user = users[0];
-                    if (user && user.senha === login_senha) {
-                        window.location.href = `/api/turma/${turma_id}/${user.id}`;
-                    } else {
-                        alert('Senha incorreta');
-                    }
-                })
-                .catch(error => {
-                    alert(error.message);
-                    console.error('Error:', error);
-                });
+                    const data = {
+                        'nome': nome,
+                        'email': email,
+                        'matricula': matricula,
+                        'curso': curso,
+                        'senha': senha,
+                        'is_admin': is_admin
+                    };
+
+                    fetch("/api/usuario", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        console.log(result);  // Imprime o resultado do submit no console
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                } else if (action === 'login') {
+                    const form = document.getElementById('login-form');
+                    const formData = new FormData(form);
+                    const turma_id = formData.get('turma_id');
+                    const login_nome = formData.get('login_nome');
+                    const login_senha = formData.get('login_senha');
+
+                    fetch(`/api/usuarios?username=${login_nome}`)
+                    .then(response => {
+                        if (response.status === 200) {
+                            return response.json();
+                        } else {
+                            throw new Error('Usuário não encontrado');
+                        }
+                    })
+                    .then(users => {
+                        const user = users[0];
+                        if (user && user.senha === login_senha) {
+                            window.location.href = `/api/turma/${turma_id}/${user.id}`;
+                        } else {
+                            alert('Senha incorreta');
+                        }
+                    })
+                    .catch(error => {
+                        alert(error.message);
+                        console.error('Error:', error);
+                    });
+                }
             }
         </script>
     """
