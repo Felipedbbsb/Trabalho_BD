@@ -292,3 +292,14 @@ async def find_user_by_id(conn, user_id: int):
                 )
             else:
                 return None  
+
+
+async def add_user(conn, user: UserIn):
+    async with conn.cursor() as curr:
+        await curr.execute("""
+        INSERT INTO Users (email, nome, matricula, curso, senha, is_admin)
+        VALUES (%s, %s, %s, %s, %s, %s)
+        RETURNING id;
+        """, (user.email, user.nome, user.matricula, user.curso, user.senha, user.is_admin))
+        user_id = await curr.fetchone()
+        return User(id=user_id[0], email=user.email, nome=user.nome, matricula=user.matricula, curso=user.curso, senha=user.senha, is_admin=user.is_admin)        
